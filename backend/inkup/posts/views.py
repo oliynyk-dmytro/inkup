@@ -4,6 +4,8 @@ from rest_framework import generics, status, permissions
 from rest_framework.exceptions import APIException
 from rest_framework.views import APIView, Response
 
+from inkup.settings import elastic_client
+
 
 class PostListCreateAPIView(generics.ListCreateAPIView):
     queryset = Post.objects.select_related("author").values(
@@ -15,6 +17,17 @@ class PostListCreateAPIView(generics.ListCreateAPIView):
     def list(self, request):
         queryset = self.get_queryset().order_by("-time_created")
         serializer = PostSerializer(queryset, many=True)
+
+        resp = elastic_client.search(
+            index="inkup_post_index",
+            query={
+                "multi_match": {
+                    "query": "dima me",
+                    "fields": ["content", "author"]
+                }
+            }
+        )
+        print(resp)
 
         return Response(serializer.data)
 
@@ -75,3 +88,4 @@ class LikePostAPIView(APIView):
         like.delete()
 
         return Response(status=status.HTTP_204_NO_CONTENT)
+

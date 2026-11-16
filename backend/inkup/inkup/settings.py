@@ -3,6 +3,8 @@ from datetime import timedelta
 
 from pathlib import Path
 from dotenv import load_dotenv
+from elasticsearch import Elasticsearch
+from django.conf import settings
 
 
 load_dotenv()
@@ -143,6 +145,9 @@ PASSWORD_HASHERS = [
     "django.contrib.auth.hashers.BCryptSHA256PasswordHasher",
 ]
 
-
+elastic_client = Elasticsearch(
+    hosts=[os.getenv("ELASTICSEARCH_URL")],
+    api_key=os.getenv("ELASTICSEARCH_API_KEY"),
+)
 
 
