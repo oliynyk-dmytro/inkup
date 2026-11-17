@@ -18,26 +18,24 @@ class PostListCreateAPIView(generics.ListCreateAPIView):
         queryset = self.get_queryset().order_by("-time_created")
         serializer = PostSerializer(queryset, many=True)
 
-        resp = elastic_client.search(
-            index="inkup_post_index",
-            query={
-                "multi_match": {
-                    "query": "dima me",
-                    "fields": ["content", "author"]
-                }
-            }
-        )
-        print(resp)
-
         return Response(serializer.data)
 
     def create(self, request):
         data = dict(request.data)
         data.update({"author": request.user.pk})
+        print(data)
 
         serializer = self.serializer_class(data=data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
+
+        doc = {
+            "content": data["content"],
+            "author": data["author"],
+            "db_id": request.,
+        }
+        resp = elastic_client.index(index="inkup_post_index", document=doc)
+        print(resp)
 
         return Response(data=serializer.data, status=status.HTTP_201_CREATED)
 
@@ -62,6 +60,11 @@ class PostRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
         serializer.save()
 
         return Response(data=serializer.data, status=status.HTTP_206_PARTIAL_CONTENT)
+
+    # def delete(self, request, pk):
+    #     elastic_client.delete(
+            
+        # )
 
 
 class LikePostAPIView(APIView):

@@ -20,12 +20,23 @@ class PostSerializer(serializers.ModelSerializer):
         ]
 
     def get_likes_number(self, obj):
-        return Like.objects.filter(post_id=obj["pk"]).count()
+        if isinstance(obj, dict):
+            post_id = obj["pk"]
+        elif isinstance(obj, Post):
+            post_id = getattr(obj, "pk")
+
+        return Like.objects.filter().count()
 
     def get_author_username(self, obj):
-        return obj["author__username"]
+        if isinstance(obj, dict):
+            return obj["author__username"]
+        elif isinstance(obj, Post):
+            return getattr(getattr(obj, "author"), "username")
 
     def get_time_created(self, obj):
+        if isinstance(obj, Post):
+            return getattr(obj, "time_created").strftime("%H:%M %B %d, %Y")
+
         return obj["time_created"].strftime("%H:%M %B %d, %Y")
 
 
